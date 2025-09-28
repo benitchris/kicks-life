@@ -7,11 +7,10 @@ let db: Database.Database | null = null
 
 export function getDatabase() {
   if (!db) {
-    // Create database in memory for demo purposes
-    // In production, you'd use a file: new Database('database.sqlite')
-    db = new Database(":memory:")
+    // Use file-based SQLite for persistence
+    db = new Database("database.sqlite")
 
-    // Initialize database with schema and seed data
+    // Initialize database with schema and seed data if first run
     initializeDatabase()
   }
   return db

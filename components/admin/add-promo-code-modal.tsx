@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useState } from "react"
+import { usePromoCodes } from "@/components/admin/promo-code-context"
 import { useToast } from "@/hooks/use-toast"
 
 interface AddPromoCodeModalProps {
@@ -26,6 +27,7 @@ export function AddPromoCodeModal({ open, onOpenChange }: AddPromoCodeModalProps
     max_uses: "",
     expires_at: "",
   })
+  const { addPromoCode } = usePromoCodes()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -45,6 +47,8 @@ export function AddPromoCodeModal({ open, onOpenChange }: AddPromoCodeModalProps
       })
 
       if (response.ok) {
+        const newPromo = await response.json()
+        addPromoCode(newPromo)
         toast({
           title: "Promo code added",
           description: "Promo code has been created successfully.",
@@ -59,8 +63,6 @@ export function AddPromoCodeModal({ open, onOpenChange }: AddPromoCodeModalProps
           max_uses: "",
           expires_at: "",
         })
-        // Refresh the page to show new promo code
-        window.location.reload()
       } else {
         throw new Error("Failed to add promo code")
       }

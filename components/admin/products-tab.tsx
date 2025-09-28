@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Edit, Trash2, Search, Eye, EyeOff } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
+import { useProducts } from "@/components/admin/product-context"
 
 interface Product {
   id: string
@@ -31,12 +32,15 @@ interface ProductsTabProps {
   categories: Category[]
 }
 
-export function ProductsTab({ products, categories }: ProductsTabProps) {
+export function ProductsTab({ categories }: { categories: Category[] }) {
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedCategory, setSelectedCategory] = useState<string>("all")
+  const [editProduct, setEditProduct] = useState<Product | null>(null)
+  const [editModalOpen, setEditModalOpen] = useState(false)
   const { toast } = useToast()
+  const { products: contextProducts, updateProduct, deleteProduct } = useProducts()
 
-  const filteredProducts = products.filter((product) => {
+  const filteredProducts = contextProducts.filter((product) => {
     const matchesSearch =
       product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       product.brand?.toLowerCase().includes(searchTerm.toLowerCase())
@@ -46,19 +50,18 @@ export function ProductsTab({ products, categories }: ProductsTabProps) {
 
   const toggleProductStatus = async (productId: string, currentStatus: boolean) => {
     try {
+      // Update backend
       const response = await fetch(`/api/admin/products/${productId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ is_active: !currentStatus }),
       })
-
       if (response.ok) {
+        updateProduct(productId, { is_active: !currentStatus })
         toast({
           title: "Product updated",
           description: `Product ${!currentStatus ? "activated" : "deactivated"} successfully.`,
         })
-        // Refresh the page to show updated data
-        window.location.reload()
       } else {
         throw new Error("Failed to update product")
       }
@@ -66,6 +69,62 @@ export function ProductsTab({ products, categories }: ProductsTabProps) {
       toast({
         title: "Error",
         description: "Failed to update product status.",
+        variant: "destructive",
+      })
+    }
+  }
+
+  const handleDeleteProduct = async (productId: string) => {
+    if (!window.confirm("Are you sure you want to delete this product?")) return;
+    try {
+      const response = await fetch(`/api/admin/products/${productId}`, {
+        method: "DELETE",
+      })
+      if (response.ok) {
+        deleteProduct(productId)
+        toast({
+          title: "Product deleted",
+          description: "Product deleted successfully.",
+        })
+      } else {
+        throw new Error("Failed to delete product")
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to delete product.",
+        variant: "destructive",
+      })
+    }
+  }
+
+  const handleEditProduct = (product: Product) => {
+    setEditProduct(product)
+    setEditModalOpen(true)
+  }
+
+  const handleUpdateProduct = async (updated: Partial<Product>) => {
+    if (!editProduct) return
+    try {
+      const response = await fetch(`/api/admin/products/${editProduct.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(updated),
+      })
+      if (response.ok) {
+        updateProduct(editProduct.id, updated)
+        toast({
+          title: "Product updated",
+          description: "Product updated successfully.",
+        })
+        setEditModalOpen(false)
+      } else {
+        throw new Error("Failed to update product")
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to update product.",
         variant: "destructive",
       })
     }
@@ -131,16 +190,54 @@ export function ProductsTab({ products, categories }: ProductsTabProps) {
                 >
                   {product.is_active ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 </Button>
-                <Button variant="outline" size="icon">
+                <Button variant="outline" size="icon" onClick={() => handleEditProduct(product)}>
                   <Edit className="h-4 w-4" />
                 </Button>
-                <Button variant="outline" size="icon" className="text-destructive bg-transparent">
+                <Button variant="outline" size="icon" className="text-destructive bg-transparent" onClick={() => handleDeleteProduct(product.id)}>
                   <Trash2 className="h-4 w-4" />
                 </Button>
               </div>
             </div>
           ))}
         </div>
+        {/* Edit Product Modal */}
+        {editModalOpen && editProduct && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+            <div className="bg-white rounded-lg p-6 w-full max-w-lg shadow-lg">
+              <h2 className="text-lg font-bold mb-4">Edit Product</h2>
+              <form
+                onSubmit={e => {
+                  e.preventDefault()
+                  const formData = new FormData(e.currentTarget)
+                  const updated: Partial<Product> = {
+                    name: formData.get("name") as string,
+                    description: formData.get("description") as string,
+                    price: Number(formData.get("price")),
+                    brand: formData.get("brand") as string,
+                    stock_quantity: Number(formData.get("stock_quantity")),
+                    image_url: formData.get("image_url") as string,
+                  }
+                  handleUpdateProduct(updated)
+                }}
+              >
+                <div className="space-y-2">
+                  <input name="name" defaultValue={editProduct.name} placeholder="Name" className="w-full border rounded px-2 py-1" />
+                  <input name="description" defaultValue={editProduct.description} placeholder="Description" className="w-full border rounded px-2 py-1" />
+                  <input name="price" type="number" defaultValue={editProduct.price} placeholder="Price" className="w-full border rounded px-2 py-1" />
+                  <input name="brand" defaultValue={editProduct.brand} placeholder="Brand" className="w-full border rounded px-2 py-1" />
+                  <input name="stock_quantity" type="number" defaultValue={editProduct.stock_quantity} placeholder="Stock Quantity" className="w-full border rounded px-2 py-1" />
+                  <input name="image_url" defaultValue={editProduct.image_url} placeholder="Image URL" className="w-full border rounded px-2 py-1" />
+                </div>
+                <div className="flex justify-end gap-2 mt-4">
+                  <Button type="button" variant="outline" onClick={() => setEditModalOpen(false)}>
+                    Cancel
+                  </Button>
+                  <Button type="submit">Update</Button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
       </CardContent>
     </Card>
   )

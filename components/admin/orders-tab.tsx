@@ -7,12 +7,13 @@ import { Badge } from "@/components/ui/badge"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Eye } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
+import { useOrders } from "@/components/admin/order-context"
 
 interface Order {
   id: string
   customer_name: string
   customer_email: string
-  total_amount: number
+  total_amount: string | number
   status: string
   created_at: string
 }
@@ -24,8 +25,9 @@ interface OrdersTabProps {
 export function OrdersTab({ orders }: OrdersTabProps) {
   const [selectedStatus, setSelectedStatus] = useState<string>("all")
   const { toast } = useToast()
+  const { orders: contextOrders, updateOrder } = useOrders()
 
-  const filteredOrders = orders.filter((order) => selectedStatus === "all" || order.status === selectedStatus)
+  const filteredOrders = contextOrders.filter((order) => selectedStatus === "all" || order.status === selectedStatus)
 
   const updateOrderStatus = async (orderId: string, newStatus: string) => {
     try {
@@ -36,12 +38,11 @@ export function OrdersTab({ orders }: OrdersTabProps) {
       })
 
       if (response.ok) {
+        updateOrder(orderId, { status: newStatus })
         toast({
           title: "Order updated",
           description: `Order status changed to ${newStatus}.`,
         })
-        // Refresh the page to show updated data
-        window.location.reload()
       } else {
         throw new Error("Failed to update order")
       }
@@ -107,7 +108,7 @@ export function OrdersTab({ orders }: OrdersTabProps) {
                 </p>
                 <div className="flex items-center gap-4 text-sm">
                   <span className="font-semibold text-green-600">
-                    ${Number.parseFloat(order.total_amount).toFixed(2)}
+                    ${Number.parseFloat(order.total_amount as any).toFixed(2)}
                   </span>
                   <span>{new Date(order.created_at).toLocaleDateString()}</span>
                 </div>

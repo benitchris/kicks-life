@@ -9,6 +9,9 @@ import { ProductsTab } from "@/components/admin/products-tab"
 import { OrdersTab } from "@/components/admin/orders-tab"
 import { PromoCodesTab } from "@/components/admin/promo-codes-tab"
 import { AddProductModal } from "@/components/admin/add-product-modal"
+import { ProductProvider, useProducts } from "@/components/admin/product-context"
+import { OrderProvider, useOrders } from "@/components/admin/order-context"
+import { PromoCodeProvider, usePromoCodes } from "@/components/admin/promo-code-context"
 
 interface AdminDashboardProps {
   products: any[]
@@ -18,10 +21,25 @@ interface AdminDashboardProps {
 }
 
 export function AdminDashboard({ products, orders, categories, promoCodes }: AdminDashboardProps) {
+  return (
+    <ProductProvider initialProducts={products}>
+      <OrderProvider initialOrders={orders}>
+        <PromoCodeProvider initialPromoCodes={promoCodes}>
+          <AdminDashboardContent categories={categories} />
+        </PromoCodeProvider>
+      </OrderProvider>
+    </ProductProvider>
+  )
+}
+
+function AdminDashboardContent({ categories }: { categories: any[] }) {
   const [isAddProductOpen, setIsAddProductOpen] = useState(false)
+  const { products } = useProducts()
+  const { orders } = useOrders()
+  const { promoCodes } = usePromoCodes()
 
   // Calculate stats
-  const totalRevenue = orders.reduce((sum, order) => sum + Number.parseFloat(order.total_amount || 0), 0)
+  const totalRevenue = orders.reduce((sum, order) => sum + Number.parseFloat(order.total_amount?.toString() || "0"), 0)
   const pendingOrders = orders.filter((order) => order.status === "pending").length
   const activeProducts = products.filter((product) => product.is_active).length
   const activePromoCodes = promoCodes.filter((code) => code.is_active).length
@@ -100,7 +118,7 @@ export function AdminDashboard({ products, orders, categories, promoCodes }: Adm
           </TabsList>
 
           <TabsContent value="products">
-            <ProductsTab products={products} categories={categories} />
+            <ProductsTab categories={categories} />
           </TabsContent>
 
           <TabsContent value="orders">

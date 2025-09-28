@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge"
 import { Plus, Edit, Trash2, Eye, EyeOff } from "lucide-react"
 import { AddPromoCodeModal } from "@/components/admin/add-promo-code-modal"
 import { useToast } from "@/hooks/use-toast"
+import { usePromoCodes } from "@/components/admin/promo-code-context"
 
 interface PromoCode {
   id: string
@@ -27,6 +28,7 @@ interface PromoCodesTabProps {
 export function PromoCodesTab({ promoCodes }: PromoCodesTabProps) {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
   const { toast } = useToast()
+  const { promoCodes: contextPromoCodes, updatePromoCode, deletePromoCode } = usePromoCodes()
 
   const togglePromoCodeStatus = async (promoId: string, currentStatus: boolean) => {
     try {
@@ -35,14 +37,12 @@ export function PromoCodesTab({ promoCodes }: PromoCodesTabProps) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ is_active: !currentStatus }),
       })
-
       if (response.ok) {
+        updatePromoCode(promoId, { is_active: !currentStatus })
         toast({
           title: "Promo code updated",
           description: `Promo code ${!currentStatus ? "activated" : "deactivated"} successfully.`,
         })
-        // Refresh the page to show updated data
-        window.location.reload()
       } else {
         throw new Error("Failed to update promo code")
       }
@@ -68,7 +68,7 @@ export function PromoCodesTab({ promoCodes }: PromoCodesTabProps) {
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
-          {promoCodes.map((promo) => (
+          {contextPromoCodes.map((promo) => (
             <div key={promo.id} className="flex items-center justify-between p-4 border rounded-lg">
               <div className="flex-1">
                 <div className="flex items-center gap-2 mb-1">

@@ -38,11 +38,13 @@ export function AddPromoCodeModal({ open, onOpenChange }: AddPromoCodeModalProps
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          ...formData,
+          code: formData.code,
+          discount_type: formData.discount_type,
           discount_value: Number.parseFloat(formData.discount_value),
           min_order_amount: Number.parseFloat(formData.min_order_amount) || 0,
-          max_uses: formData.max_uses ? Number.parseInt(formData.max_uses) : null,
-          expires_at: formData.expires_at || null,
+          max_uses: formData.max_uses ? Number.parseInt(formData.max_uses) : undefined,
+          active: true,
+          expires_at: formData.expires_at || undefined,
         }),
       })
 

@@ -98,7 +98,7 @@ export function OrdersTab({ orders }: OrdersTabProps) {
             <div key={order.id} className="flex items-center justify-between p-4 border rounded-lg">
               <div className="flex-1">
                 <div className="flex items-center gap-2 mb-1">
-                  <h3 className="font-semibold">Order #{order.id.slice(0, 8)}</h3>
+                  <h3 className="font-semibold">Order #{order.id.toString().slice(0, 8)}</h3>
                   <Badge className={getStatusColor(order.status)}>
                     {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
                   </Badge>

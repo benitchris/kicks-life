@@ -27,9 +27,12 @@ export function ProductGrid({ products }: ProductGridProps) {
     )
   }
 
+  // Sort products by id descending (newest first)
+  const sortedProducts = [...products].sort((a, b) => Number(b.id) - Number(a.id))
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-      {products.map((product) => (
+      {sortedProducts.map((product) => (
         <ProductCard key={product.id} product={product} />
       ))}
     </div>

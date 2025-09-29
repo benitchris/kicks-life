@@ -30,7 +30,7 @@ export function AddProductModal({ open, onOpenChange, categories }: AddProductMo
     description: "",
     price: "",
     brand: "",
-    category_id: "",
+    category: "",
     stock_quantity: "",
     image_url: "",
     sizes: "",
@@ -69,7 +69,7 @@ export function AddProductModal({ open, onOpenChange, categories }: AddProductMo
         body: JSON.stringify({
           ...formData,
           image_url: imageUrl,
-          category: formData.category_id, // send as 'category' for backend
+          category: formData.category, // send name for backend
           price: Number.parseFloat(formData.price),
           stock_quantity: Number.parseInt(formData.stock_quantity),
           sizes: JSON.stringify(formData.sizes
@@ -94,7 +94,7 @@ export function AddProductModal({ open, onOpenChange, categories }: AddProductMo
           description: "",
           price: "",
           brand: "",
-          category_id: "",
+          category: "",
           stock_quantity: "",
           image_url: "",
           sizes: "",
@@ -166,15 +166,15 @@ export function AddProductModal({ open, onOpenChange, categories }: AddProductMo
             <div>
               <Label htmlFor="category">Category *</Label>
               <Select
-                value={formData.category_id}
-                onValueChange={(value) => setFormData({ ...formData, category_id: value })}
+                value={formData.category}
+                onValueChange={(value) => setFormData({ ...formData, category: value })}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select category" />
                 </SelectTrigger>
                 <SelectContent>
                   {categories.map((category) => (
-                    <SelectItem key={category.id} value={category.id}>
+                    <SelectItem key={category.id} value={category.name}>
                       {category.name}
                     </SelectItem>
                   ))}

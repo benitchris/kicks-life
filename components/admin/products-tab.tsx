@@ -11,7 +11,7 @@ import { useToast } from "@/hooks/use-toast"
 import { useProducts } from "@/components/admin/product-context"
 
 interface Product {
-  id: string
+  id: string | number
   name: string
   description?: string
   price: number
@@ -19,7 +19,7 @@ interface Product {
   brand?: string
   stock_quantity: number
   is_active: boolean
-  category_id: string
+  category: string // Always the category name
 }
 
 interface Category {
@@ -40,11 +40,16 @@ export function ProductsTab({ categories }: { categories: Category[] }) {
   const { toast } = useToast()
   const { products: contextProducts, updateProduct, deleteProduct } = useProducts()
 
-  const filteredProducts = contextProducts.filter((product) => {
+  // Sort: new products (higher id) at top, old at bottom
+  const sortedProducts = [...contextProducts].sort((a, b) => Number(b.id) - Number(a.id))
+  // Filter by search and category (category is always the name)
+  const filteredProducts = sortedProducts.filter((product) => {
     const matchesSearch =
       product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       product.brand?.toLowerCase().includes(searchTerm.toLowerCase())
-    const matchesCategory = selectedCategory === "all" || product.category_id === selectedCategory
+    const matchesCategory =
+      selectedCategory === "all" ||
+      product.category === selectedCategory
     return matchesSearch && matchesCategory
   })
 
@@ -105,14 +110,16 @@ export function ProductsTab({ categories }: { categories: Category[] }) {
 
   const handleUpdateProduct = async (updated: Partial<Product>) => {
     if (!editProduct) return
+    // Remove id from update payload to avoid type conflict
+    const { id, ...updatePayload } = updated
     try {
       const response = await fetch(`/api/admin/products/${editProduct.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(updated),
+        body: JSON.stringify(updatePayload),
       })
       if (response.ok) {
-        updateProduct(editProduct.id, updated)
+        updateProduct(editProduct.id.toString(), updatePayload)
         toast({
           title: "Product updated",
           description: "Product updated successfully.",
@@ -151,10 +158,11 @@ export function ProductsTab({ categories }: { categories: Category[] }) {
             <SelectContent>
               <SelectItem value="all">All Categories</SelectItem>
               {categories.map((category) => (
-                <SelectItem key={category.id} value={category.id}>
+                <SelectItem key={category.id} value={category.name}>
                   {category.name}
                 </SelectItem>
               ))}
+              <SelectItem value="uncategorized">Uncategorized</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -179,7 +187,7 @@ export function ProductsTab({ categories }: { categories: Category[] }) {
                 <div className="flex items-center gap-4 text-sm">
                   <span className="font-semibold text-orange-600">${product.price.toFixed(2)}</span>
                   <span>Stock: {product.stock_quantity}</span>
-                  <span>Category: {categories.find((c) => c.id === product.category_id)?.name}</span>
+                  <span>Category: {product.category || "Uncategorized"}</span>
                 </div>
               </div>
               <div className="flex items-center gap-2">

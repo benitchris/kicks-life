@@ -45,15 +45,16 @@ export async function POST(request: NextRequest) {
       total_amount = subtotal - discount_amount
     }
 
-    // Create the order
+    // Create the order, passing subtotal, discount_amount, and total_amount
     const order = createOrder({
       customer_name: validatedData.customer_name,
       customer_email: validatedData.customer_email,
       customer_phone: validatedData.customer_phone,
       shipping_address: validatedData.shipping_address,
+      subtotal,
+      discount_amount,
       total_amount,
       promo_code: validatedData.promo_code,
-      discount_amount,
       items: validatedData.items,
     })
 

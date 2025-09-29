@@ -13,7 +13,7 @@ interface Product {
   price: number
   image_url?: string
   brand?: string
-  category: string
+  category: string // Always the category name
   sizes: string // JSON string from database
   colors: string // JSON string from database
   stock_quantity: number
@@ -51,7 +51,7 @@ export function ProductCard({ product }: ProductCardProps) {
                 {product.brand}
               </Badge>
               <Badge variant="outline" className="text-xs">
-                {product.category}
+                {product.category || "Uncategorized"}
               </Badge>
             </div>
             <h3 className="font-semibold text-lg mb-1 line-clamp-2">{product.name}</h3>

@@ -105,9 +105,10 @@ export function createOrder(orderData: {
   customer_email: string
   customer_phone?: string
   shipping_address: string
+  subtotal: number
+  discount_amount?: number
   total_amount: number
   promo_code?: string
-  discount_amount?: number
   items: Array<{
     product_id: number
     quantity: number
@@ -122,9 +123,6 @@ export function createOrder(orderData: {
       VALUES (?, ?, ?, ?, ?, ?, ?, ?)
     `)
 
-    // Calculate subtotal from items
-    const subtotal = orderData.items.reduce((sum, item) => sum + item.price * item.quantity, 0)
-
     // Get promo code ID if provided
     let promoCodeId = null
     if (orderData.promo_code) {
@@ -137,7 +135,7 @@ export function createOrder(orderData: {
       orderData.customer_email,
       orderData.customer_phone || null,
       orderData.shipping_address,
-      subtotal,
+      orderData.subtotal,
       orderData.discount_amount || 0,
       orderData.total_amount,
       promoCodeId,

@@ -11,7 +11,7 @@ export interface Product {
   brand?: string
   stock_quantity: number
   is_active: boolean
-  category_id: string
+  category: string // Always the category name
   sizes?: string
   colors?: string
   featured?: boolean

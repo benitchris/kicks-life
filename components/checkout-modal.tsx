@@ -30,7 +30,7 @@ export function CheckoutModal({ open, onOpenChange }: CheckoutModalProps) {
   })
 
   const subtotal = getTotal()
-  const finalTotal = subtotal - discount
+  const finalTotal = Math.max(subtotal - discount, 0)
 
   const handleApplyPromo = async () => {
     if (!promoCode.trim()) return
@@ -103,10 +103,47 @@ export function CheckoutModal({ open, onOpenChange }: CheckoutModalProps) {
       const data = await response.json()
 
       if (response.ok) {
-        toast({
-          title: "Order placed successfully!",
-          description: "You will receive a confirmation email shortly.",
-        })
+        // Send order info to email
+        try {
+          const emailRes = await fetch("/api/email-order", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              ...data,
+              items: items.map((item) => ({
+                id: item.id,
+                name: item.name,
+                size: item.size,
+                color: item.color,
+                quantity: item.quantity,
+                price: item.price,
+                image_url: item.image_url || null,
+              })),
+              total_amount: finalTotal,
+            }),
+          })
+          if (!emailRes.ok) {
+            const errText = await emailRes.text()
+            toast({
+              title: "Order placed, but email failed",
+              description: errText,
+              variant: "destructive",
+            })
+            console.error("Email API error:", errText)
+          } else {
+            toast({
+              title: "Order placed successfully!",
+              description: "You will receive a confirmation email shortly.",
+            })
+          }
+        } catch (e) {
+          toast({
+            title: "Order placed, but email failed",
+            description: e instanceof Error ? e.message : "Email error.",
+            variant: "destructive",
+          })
+          console.error("Email send error:", e)
+        }
         clearCart()
         onOpenChange(false)
       } else {
@@ -118,6 +155,7 @@ export function CheckoutModal({ open, onOpenChange }: CheckoutModalProps) {
         description: error instanceof Error ? error.message : "Failed to place order.",
         variant: "destructive",
       })
+      console.error("Order error:", error)
     } finally {
       setIsLoading(false)
     }
@@ -226,10 +264,10 @@ export function CheckoutModal({ open, onOpenChange }: CheckoutModalProps) {
             {discount > 0 && (
               <div className="flex justify-between text-green-600">
                 <span>Discount:</span>
-                <span>-${discount.toFixed(2)}</span>
+                <span>- ${discount.toFixed(2)}</span>
               </div>
             )}
-            <div className="flex justify-between text-lg font-semibold">
+            <div className="flex justify-between text-lg font-semibold border-t pt-2 mt-2">
               <span>Total:</span>
               <span className="text-orange-600">${finalTotal.toFixed(2)}</span>
             </div>

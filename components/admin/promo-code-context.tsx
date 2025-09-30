@@ -24,19 +24,28 @@ interface PromoCodeContextType {
 
 const PromoCodeContext = createContext<PromoCodeContextType | undefined>(undefined)
 
-export function PromoCodeProvider({ children, initialPromoCodes = [] }: { children: ReactNode, initialPromoCodes?: PromoCode[] }) {
-  const [promoCodes, setPromoCodes] = useState<PromoCode[]>(initialPromoCodes)
 
-  const addPromoCode = useCallback((promoCode: PromoCode) => {
-    setPromoCodes((prev) => [promoCode, ...prev])
+export function PromoCodeProvider({ children, initialPromoCodes = [] }: { children: ReactNode, initialPromoCodes?: PromoCode[] }) {
+  // Map backend 'active' to UI 'is_active' on initial load
+  const mapPromo = (promo: any) => {
+    const { active, ...rest } = promo
+    return { ...rest, is_active: typeof active === 'boolean' ? active : !!active }
+  }
+  const [promoCodes, setPromoCodesRaw] = useState<PromoCode[]>(initialPromoCodes.map(mapPromo))
+
+  // Always map backend promo codes to UI shape
+  const setPromoCodes = (codes: any[]) => setPromoCodesRaw(codes.map(mapPromo))
+
+  const addPromoCode = useCallback((promoCode: any) => {
+    setPromoCodesRaw((prev) => [mapPromo(promoCode), ...prev])
   }, [])
 
   const updatePromoCode = useCallback((id: string, updates: Partial<PromoCode>) => {
-    setPromoCodes((prev) => prev.map((p) => (p.id === id ? { ...p, ...updates } : p)))
+    setPromoCodesRaw((prev) => prev.map((p) => (p.id === id ? { ...p, ...updates } : p)))
   }, [])
 
   const deletePromoCode = useCallback((id: string) => {
-    setPromoCodes((prev) => prev.filter((p) => p.id !== id))
+    setPromoCodesRaw((prev) => prev.filter((p) => p.id !== id))
   }, [])
 
   return (

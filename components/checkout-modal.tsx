@@ -7,7 +7,9 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Separator } from "@/components/ui/separator"
 import { Badge } from "@/components/ui/badge"
-import { useState } from "react"
+import { useState, useEffect } from "react"
+// import { usePromoCodes } from "@/components/admin/promo-code-context"
+import { validateAndApplyPromoCode } from "@/lib/promo-discount"
 import { useCart } from "@/hooks/use-cart"
 import { useToast } from "@/hooks/use-toast"
 
@@ -18,10 +20,28 @@ interface CheckoutModalProps {
 
 export function CheckoutModal({ open, onOpenChange }: CheckoutModalProps) {
   const { items, getTotal, clearCart } = useCart()
+  // const { promoCodes } = usePromoCodes()
+  const [promoCodes, setPromoCodes] = useState<any[]>([])
+  useEffect(() => {
+    if (open) {
+      fetch("/api/admin/promo-codes")
+        .then((res) => res.json())
+        .then((data) => {
+          // Map backend 'active' to UI 'is_active'
+          const codes = (data.promoCodes || []).map((promo: any) => {
+            const { active, ...rest } = promo
+            return { ...rest, is_active: typeof active === 'boolean' ? active : !!active }
+          })
+          setPromoCodes(codes)
+        })
+    }
+  }, [open])
   const { toast } = useToast()
   const [isLoading, setIsLoading] = useState(false)
   const [promoCode, setPromoCode] = useState("")
   const [discount, setDiscount] = useState(0)
+  const [promoApplied, setPromoApplied] = useState(false)
+  const [promoMessage, setPromoMessage] = useState<string | null>(null)
   const [customerInfo, setCustomerInfo] = useState({
     name: "",
     email: "",
@@ -29,44 +49,43 @@ export function CheckoutModal({ open, onOpenChange }: CheckoutModalProps) {
     address: "",
   })
 
-  const subtotal = getTotal()
-  const finalTotal = Math.max(subtotal - discount, 0)
+  const regularSubtotal = getTotal()
+  let subtotal = regularSubtotal
+  let finalTotal = regularSubtotal
+  if (promoApplied && discount > 0) {
+    subtotal = regularSubtotal
+    finalTotal = Math.max(regularSubtotal - discount, 0)
+  }
 
-  const handleApplyPromo = async () => {
+  const handleApplyPromo = () => {
     if (!promoCode.trim()) return
-
     setIsLoading(true)
-    try {
-      const response = await fetch("/api/promo-codes/validate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ code: promoCode, orderAmount: subtotal }),
+    setTimeout(() => {
+      const result = validateAndApplyPromoCode({
+        code: promoCode,
+        subtotal: regularSubtotal,
+        promoCodes,
       })
-
-      const data = await response.json()
-
-      if (data.valid) {
-        setDiscount(data.discountAmount)
+      if (result.valid) {
+        setDiscount(result.discount)
+        setPromoApplied(true)
+        setPromoMessage(result.message)
         toast({
           title: "Promo code applied!",
-          description: `You saved $${data.discountAmount.toFixed(2)}`,
+          description: `You saved $${result.discount.toFixed(2)}`,
         })
       } else {
+        setDiscount(0)
+        setPromoApplied(false)
+        setPromoMessage(result.message)
         toast({
           title: "Invalid promo code",
-          description: data.message || "This promo code is not valid.",
+          description: result.message,
           variant: "destructive",
         })
       }
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to validate promo code.",
-        variant: "destructive",
-      })
-    } finally {
       setIsLoading(false)
-    }
+    }, 300)
   }
 
   const handleSubmitOrder = async () => {
@@ -201,11 +220,19 @@ export function CheckoutModal({ open, onOpenChange }: CheckoutModalProps) {
           <div>
             <h3 className="font-semibold mb-3">Promo Code</h3>
             <div className="flex gap-2">
-              <Input placeholder="Enter promo code" value={promoCode} onChange={(e) => setPromoCode(e.target.value)} />
+              <Input placeholder="Enter promo code" value={promoCode} onChange={(e) => {
+                setPromoCode(e.target.value)
+                setPromoApplied(false)
+                setDiscount(0)
+                setPromoMessage(null)
+              }} />
               <Button variant="outline" onClick={handleApplyPromo} disabled={isLoading || !promoCode.trim()}>
                 Apply
               </Button>
             </div>
+            {promoMessage && (
+              <div className={`text-sm mt-1 ${promoApplied ? 'text-green-600' : 'text-red-600'}`}>{promoMessage}</div>
+            )}
           </div>
 
           <Separator />
@@ -259,9 +286,9 @@ export function CheckoutModal({ open, onOpenChange }: CheckoutModalProps) {
           <div className="space-y-2">
             <div className="flex justify-between">
               <span>Subtotal:</span>
-              <span>${subtotal.toFixed(2)}</span>
+              <span>${promoApplied && discount > 0 ? regularSubtotal.toFixed(2) : subtotal.toFixed(2)}</span>
             </div>
-            {discount > 0 && (
+            {promoApplied && discount > 0 && (
               <div className="flex justify-between text-green-600">
                 <span>Discount:</span>
                 <span>- ${discount.toFixed(2)}</span>

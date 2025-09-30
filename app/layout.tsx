@@ -4,6 +4,7 @@ import { GeistMono } from 'geist/font/mono'
 import { Analytics } from '@vercel/analytics/next'
 import './globals.css'
 import { CartProvider } from '@/components/cart-context'
+import { PromoCodeProvider } from '@/components/admin/promo-code-context'
 
 export const metadata: Metadata = {
   title: 'v0 App',
@@ -19,10 +20,12 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`font-sans ${GeistSans.variable} ${GeistMono.variable}`}>
-        <CartProvider>
-          {children}
-          <Analytics />
-        </CartProvider>
+        <PromoCodeProvider>
+          <CartProvider>
+            {children}
+            <Analytics />
+          </CartProvider>
+        </PromoCodeProvider>
       </body>
     </html>
   )

@@ -4,7 +4,12 @@ import { updatePromoCode, deletePromoCode } from "@/lib/database-queries"
 export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params
-    const updateData = await request.json()
+    let updateData = await request.json()
+
+    // Convert 'active' boolean to 1/0 for SQLite
+    if (typeof updateData.active === "boolean") {
+      updateData.active = updateData.active ? 1 : 0
+    }
 
     const promoCodeId = Number.parseInt(id)
 

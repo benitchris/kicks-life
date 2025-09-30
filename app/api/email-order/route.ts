@@ -10,7 +10,6 @@ export async function POST(req: NextRequest) {
       `<li style="margin-bottom:8px;">
         <b>${item.quantity} x ${item.name}</b><br/>
         Size: ${item.size}, Color: ${item.color}, Price: $${item.price}
-        ${item.image_url ? `<br/><img src="${item.image_url}" alt="${item.name}" style="width:60px;height:60px;object-fit:cover;border-radius:6px;" />` : ""}
       </li>`
     ).join("")
 
@@ -20,36 +19,36 @@ export async function POST(req: NextRequest) {
       <p><b>Email:</b> ${order.customer_email}</p>
       <p><b>Phone:</b> ${order.customer_phone || "-"}</p>
       <p><b>Address:</b> ${order.shipping_address}</p>
+      <p><b>Promo Code:</b> ${order.promo_code || "-"}</p>
+      <p><b>Discount:</b> $${order.discount_amount !== undefined ? order.discount_amount : 0}</p>
+      <p><b>Total:</b> $${order.total_amount || "-"}</p>
       <h3>Order Items:</h3>
       <ul>${itemsHtml}</ul>
-      <p><b>Promo Code:</b> ${order.promo_code || "-"}</p>
-      <p><b>Total:</b> $${order.total_amount || "-"}</p>
     `
 
 
-    // Send email using Brevo API
-    const brevoApiKey = process.env.BREVO_API_KEY
-    if (!brevoApiKey) {
-      throw new Error("Missing BREVO_API_KEY in environment variables")
-    }
-
-    const brevoRes = await fetch("https://api.brevo.com/v3/smtp/email", {
+    // Send order data to Google Apps Script Web App (spreadsheet)
+  const webAppUrl = "https://script.google.com/macros/s/AKfycby-lM2hIjGOkS_MuKf8gzyxWByNEf486ixhe3qkx3D5_ujg-IuwXyRjxn22atsdJ7hfNw/exec"
+    const sheetRes = await fetch(webAppUrl, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "api-key": brevoApiKey,
-      },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-  sender: { name: "Kicks Life", email: "cbenit11@gmail.com" },
-        to: [{ email: "cbenit11@gmail.com", name: "Admin" }],
-        subject: "New Order Received",
-        htmlContent: html,
+        name: order.customer_name,
+        email: order.customer_email,
+        phone: order.customer_phone,
+        address: order.shipping_address,
+        promoCode: order.promo_code || "-",
+        discount: order.discount_amount !== undefined ? order.discount_amount : 0,
+        total: order.total_amount || 0,
+        orderItems: Array.isArray(order.items)
+          ? order.items.map((item: any) => `${item.quantity}x ${item.name} (Size: ${item.size}, Color: ${item.color}, $${item.price})`).join("; ")
+          : "",
       }),
     })
 
-    if (!brevoRes.ok) {
-      const errText = await brevoRes.text()
-      throw new Error(`Brevo API error: ${errText}`)
+    if (!sheetRes.ok) {
+      const errText = await sheetRes.text()
+      throw new Error(`Spreadsheet API error: ${errText}`)
     }
 
     return NextResponse.json({ success: true })

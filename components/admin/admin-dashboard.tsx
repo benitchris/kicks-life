@@ -47,13 +47,13 @@ function AdminDashboardContent({ categories }: { categories: any[] }) {
   return (
     <div className="min-h-screen bg-background">
       <div className="border-b">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
+        <div className="container mx-auto px-2 py-4">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <h1 className="text-3xl font-bold text-orange-600">Kicks Life 250</h1>
-              <p className="text-muted-foreground">Admin Dashboard</p>
+              <h1 className="text-2xl sm:text-3xl font-bold text-orange-600">Kicks Life 250</h1>
+              <p className="text-muted-foreground text-sm sm:text-base">Admin Dashboard</p>
             </div>
-            <Button onClick={() => setIsAddProductOpen(true)} className="bg-orange-600 hover:bg-orange-700">
+            <Button onClick={() => setIsAddProductOpen(true)} className="bg-orange-600 hover:bg-orange-700 w-full sm:w-auto">
               <Plus className="h-4 w-4 mr-2" />
               Add Product
             </Button>
@@ -61,49 +61,49 @@ function AdminDashboardContent({ categories }: { categories: any[] }) {
         </div>
       </div>
 
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-2 py-4 sm:py-8">
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-1 xs:grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 mb-6 sm:mb-8">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
+              <CardTitle className="text-xs sm:text-sm font-medium">Total Revenue</CardTitle>
               <BarChart3 className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-green-600">${totalRevenue.toFixed(2)}</div>
+              <div className="text-xl sm:text-2xl font-bold text-green-600">${totalRevenue.toFixed(2)}</div>
               <p className="text-xs text-muted-foreground">From {orders.length} orders</p>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Pending Orders</CardTitle>
+              <CardTitle className="text-xs sm:text-sm font-medium">Pending Orders</CardTitle>
               <ShoppingCart className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-orange-600">{pendingOrders}</div>
+              <div className="text-xl sm:text-2xl font-bold text-orange-600">{pendingOrders}</div>
               <p className="text-xs text-muted-foreground">Awaiting processing</p>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Active Products</CardTitle>
+              <CardTitle className="text-xs sm:text-sm font-medium">Active Products</CardTitle>
               <Package className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-blue-600">{activeProducts}</div>
+              <div className="text-xl sm:text-2xl font-bold text-blue-600">{activeProducts}</div>
               <p className="text-xs text-muted-foreground">Out of {products.length} total</p>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Active Promo Codes</CardTitle>
+              <CardTitle className="text-xs sm:text-sm font-medium">Active Promo Codes</CardTitle>
               <Tag className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-purple-600">{activePromoCodes}</div>
+              <div className="text-xl sm:text-2xl font-bold text-purple-600">{activePromoCodes}</div>
               <p className="text-xs text-muted-foreground">Currently available</p>
             </CardContent>
           </Card>
@@ -111,10 +111,10 @@ function AdminDashboardContent({ categories }: { categories: any[] }) {
 
         {/* Main Content Tabs */}
         <Tabs defaultValue="products" className="space-y-4">
-          <TabsList>
-            <TabsTrigger value="products">Products</TabsTrigger>
-            <TabsTrigger value="orders">Orders</TabsTrigger>
-            <TabsTrigger value="promo-codes">Promo Codes</TabsTrigger>
+          <TabsList className="w-full flex flex-col sm:flex-row gap-2 sm:gap-4">
+            <TabsTrigger value="products" className="flex-1">Products</TabsTrigger>
+            <TabsTrigger value="orders" className="flex-1">Orders</TabsTrigger>
+            <TabsTrigger value="promo-codes" className="flex-1">Promo Codes</TabsTrigger>
           </TabsList>
 
           <TabsContent value="products">

@@ -141,18 +141,18 @@ export function ProductsTab({ categories }: { categories: Category[] }) {
     <Card>
       <CardHeader>
         <CardTitle>Products Management</CardTitle>
-        <div className="flex gap-4">
-          <div className="relative flex-1">
+        <div className="flex flex-col gap-2 sm:flex-row sm:gap-4 w-full">
+          <div className="relative flex-1 w-full">
             <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
             <Input
               placeholder="Search products..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10"
+              className="pl-10 w-full"
             />
           </div>
           <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-            <SelectTrigger className="w-48">
+            <SelectTrigger className="w-full sm:w-48">
               <SelectValue placeholder="Filter by category" />
             </SelectTrigger>
             <SelectContent>
@@ -170,39 +170,56 @@ export function ProductsTab({ categories }: { categories: Category[] }) {
       <CardContent>
         <div className="space-y-4">
           {filteredProducts.map((product) => (
-            <div key={product.id} className="flex items-center gap-4 p-4 border rounded-lg">
+            <div
+              key={product.id}
+              className="flex flex-col sm:flex-row items-center gap-4 p-4 border rounded-lg bg-white shadow-sm"
+            >
               <img
                 src={product.image_url || "/placeholder.svg?height=80&width=80"}
                 alt={product.name}
-                className="w-20 h-20 object-cover rounded"
+                className="w-24 h-24 object-cover rounded mb-2 sm:mb-0"
               />
-              <div className="flex-1">
-                <div className="flex items-center gap-2 mb-1">
-                  <h3 className="font-semibold">{product.name}</h3>
+              <div className="flex-1 w-full">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-2 mb-1">
+                  <h3 className="font-semibold text-lg break-words">{product.name}</h3>
                   <Badge variant={product.is_active ? "default" : "secondary"}>
                     {product.is_active ? "Active" : "Inactive"}
                   </Badge>
                 </div>
-                <p className="text-sm text-muted-foreground mb-2">{product.brand}</p>
-                <div className="flex items-center gap-4 text-sm">
+                <p className="text-sm text-muted-foreground mb-2 break-words">{product.brand}</p>
+                <div className="flex flex-wrap items-center gap-2 text-sm">
                   <span className="font-semibold text-orange-600">${product.price.toFixed(2)}</span>
                   <span>Stock: {product.stock_quantity}</span>
                   <span>Category: {product.category || "Uncategorized"}</span>
                 </div>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex flex-row gap-2 w-full sm:w-auto justify-end">
                 <Button
                   variant="outline"
                   size="icon"
+                  className="w-12 h-12 sm:w-10 sm:h-10"
                   onClick={() => toggleProductStatus(product.id, product.is_active)}
+                  aria-label={product.is_active ? "Deactivate" : "Activate"}
                 >
-                  {product.is_active ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  {product.is_active ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                 </Button>
-                <Button variant="outline" size="icon" onClick={() => handleEditProduct(product)}>
-                  <Edit className="h-4 w-4" />
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="w-12 h-12 sm:w-10 sm:h-10"
+                  onClick={() => handleEditProduct(product)}
+                  aria-label="Edit"
+                >
+                  <Edit className="h-5 w-5" />
                 </Button>
-                <Button variant="outline" size="icon" className="text-destructive bg-transparent" onClick={() => handleDeleteProduct(product.id)}>
-                  <Trash2 className="h-4 w-4" />
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="w-12 h-12 sm:w-10 sm:h-10 text-destructive bg-transparent"
+                  onClick={() => handleDeleteProduct(product.id)}
+                  aria-label="Delete"
+                >
+                  <Trash2 className="h-5 w-5" />
                 </Button>
               </div>
             </div>

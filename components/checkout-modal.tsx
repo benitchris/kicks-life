@@ -129,6 +129,7 @@ export function CheckoutModal({ open, onOpenChange }: CheckoutModalProps) {
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
               ...data,
+              promoCode, // always include promoCode from state
               items: items.map((item) => ({
                 id: item.id,
                 name: item.name,

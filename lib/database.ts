@@ -25,10 +25,16 @@ function initializeDatabase() {
     const schema = readFileSync(schemaPath, "utf8")
     db.exec(schema)
 
-    // Read and execute seed data
-    const seedPath = join(process.cwd(), "scripts", "02-seed-data.sql")
-    const seedData = readFileSync(seedPath, "utf8")
-    db.exec(seedData)
+    // Only run seed if products table is empty
+  const row = db.prepare('SELECT COUNT(*) as count FROM products').get() as { count: number }
+  if (row.count === 0) {
+      const seedPath = join(process.cwd(), "scripts", "02-seed-data.sql")
+      const seedData = readFileSync(seedPath, "utf8")
+      db.exec(seedData)
+      console.log("[v0] Database seeded with sample data")
+    } else {
+      console.log("[v0] Database already has data, skipping seed")
+    }
 
     console.log("[v0] Database initialized successfully")
   } catch (error) {

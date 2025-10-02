@@ -6,11 +6,27 @@ import { Badge } from "@/components/ui/badge"
 import { useCart } from "@/hooks/use-cart"
 import { CartSheet } from "@/components/cart-sheet"
 import { useState } from "react"
+import { useRouter, useSearchParams } from "next/navigation"
+
 
 export function Header() {
   const { items } = useCart()
   const [isCartOpen, setIsCartOpen] = useState(false)
   const itemCount = items.reduce((sum, item) => sum + item.quantity, 0)
+  const router = useRouter()
+  const searchParams = useSearchParams()
+  const [searchTerm, setSearchTerm] = useState(searchParams.get("search") || "")
+
+  const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    const params = new URLSearchParams(Array.from(searchParams.entries()))
+    if (searchTerm) {
+      params.set("search", searchTerm)
+    } else {
+      params.delete("search")
+    }
+    router.push(`/?${params.toString()}`)
+  }
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -37,10 +53,15 @@ export function Header() {
         </div>
 
         <div className="flex items-center gap-4">
-          <div className="hidden md:flex items-center gap-2">
+          <form className="hidden md:flex items-center gap-2" onSubmit={handleSearch}>
             <span className="text-muted-foreground">🔍</span>
-            <Input placeholder="Search sneakers..." className="w-64" />
-          </div>
+            <Input
+              placeholder="Search sneakers..."
+              className="w-64"
+              value={searchTerm}
+              onChange={e => setSearchTerm(e.target.value)}
+            />
+          </form>
 
           <Button variant="ghost" size="icon" className="relative" onClick={() => setIsCartOpen(true)}>
             <span className="text-lg">🛒</span>

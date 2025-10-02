@@ -37,16 +37,22 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
     const { id } = await params
     const productId = Number.parseInt(id)
 
+    console.log(`[DELETE] Attempting to delete product with id:`, id, 'parsed:', productId)
+
     if (isNaN(productId)) {
+      console.warn(`[DELETE] Invalid product ID:`, id)
       return NextResponse.json({ message: "Invalid product ID" }, { status: 400 })
     }
 
     const success = deleteProduct(productId)
+    console.log(`[DELETE] deleteProduct result:`, success)
 
     if (!success) {
+      console.warn(`[DELETE] Product not found or failed to delete:`, productId)
       return NextResponse.json({ message: "Product not found or failed to delete" }, { status: 404 })
     }
 
+    console.log(`[DELETE] Product deleted successfully:`, productId)
     return NextResponse.json({ message: "Product deleted successfully" })
   } catch (error) {
     console.error("[v0] Error in DELETE /api/admin/products/[id]:", error)

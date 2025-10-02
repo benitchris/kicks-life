@@ -10,13 +10,16 @@ const categories = [
   { id: "Lifestyle", name: "Lifestyle", slug: "lifestyle" },
 ]
 
-async function getProducts(category?: string) {
+async function getProducts(category?: string, search?: string) {
   try {
     const baseUrl = process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000"
 
     const url = new URL("/api/products", baseUrl)
     if (category) {
       url.searchParams.set("category", category)
+    }
+    if (search) {
+      url.searchParams.set("search", search)
     }
 
     const response = await fetch(url.toString(), {
@@ -39,11 +42,11 @@ async function getProducts(category?: string) {
 export default async function HomePage({
   searchParams,
 }: {
-  searchParams: Promise<{ category?: string }>
+  searchParams: Promise<{ category?: string; search?: string }>
 }) {
   const params = await searchParams
 
-  const products = await getProducts(params.category)
+  const products = await getProducts(params.category, params.search)
 
   return (
     <div className="min-h-screen bg-background">

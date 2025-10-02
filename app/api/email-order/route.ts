@@ -3,7 +3,11 @@ import { NextRequest, NextResponse } from "next/server"
 
 export async function POST(req: NextRequest) {
   try {
-    const order = await req.json()
+  const order = await req.json()
+  console.log('Order received:', order)
+
+  // If the payload has an 'order' property, use it for customer info
+  const orderInfo = order.order || order
 
     // Compose email content with all cart info
     const itemsHtml = order.items.map((item: any) =>
@@ -29,22 +33,37 @@ export async function POST(req: NextRequest) {
 
     // Send order data to Google Apps Script Web App (spreadsheet)
   const webAppUrl = "https://script.google.com/macros/s/AKfycby-lM2hIjGOkS_MuKf8gzyxWByNEf486ixhe3qkx3D5_ujg-IuwXyRjxn22atsdJ7hfNw/exec"
-    const sheetRes = await fetch(webAppUrl, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        name: order.customer_name,
-        email: order.customer_email,
-        phone: order.customer_phone,
-        address: order.shipping_address,
-        promoCode: order.promo_code || "-",
-        discount: order.discount_amount !== undefined ? order.discount_amount : 0,
-        total: order.total_amount || 0,
+      // Build a row object with all fields, even if some are empty
+      // Build promoCode as array: [code, deducted amount] if available
+    let promoCodeArr: (string | number)[] = []
+      // Fallback: if promo_code is null, try promoCode from top-level order (frontend state)
+      let code = orderInfo.promo_code || order.promo_code || ""
+      if ((!code || code === "") && order.promoCode) {
+        code = order.promoCode
+      }
+      const discountVal = orderInfo.discount_amount !== undefined ? orderInfo.discount_amount : (order.discount_amount !== undefined ? order.discount_amount : 0)
+      if (code && code !== "-") {
+        promoCodeArr = [code, discountVal]
+      }
+
+      const rowData = {
+        name: orderInfo.name || orderInfo.customer_name || "",
+        email: orderInfo.email || orderInfo.customer_email || "",
+        phone: orderInfo.phone || orderInfo.customer_phone || "",
+        address: orderInfo.address || orderInfo.shipping_address || "",
+        promoCode: promoCodeArr,
+        discount: discountVal,
+        total: orderInfo.total_amount || order.total_amount || 0,
         orderItems: Array.isArray(order.items)
           ? order.items.map((item: any) => `${item.quantity}x ${item.name} (Size: ${item.size}, Color: ${item.color}, $${item.price})`).join("; ")
           : "",
-      }),
-    })
+      }
+      console.log('Row data sent to sheet:', rowData)
+      const sheetRes = await fetch(webAppUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(rowData),
+      })
 
     if (!sheetRes.ok) {
       const errText = await sheetRes.text()

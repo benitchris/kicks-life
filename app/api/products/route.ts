@@ -8,9 +8,10 @@ export async function GET(request: NextRequest) {
     const category = searchParams.get("category")
     const search = searchParams.get("search")
     const featured = searchParams.get("featured")
+    const page = parseInt(searchParams.get("page") || "1", 10)
+    const pageSize = parseInt(searchParams.get("pageSize") || "12", 10)
 
-    let products
-
+    let products: any[] = []
     if (search) {
       products = searchProducts(search)
     } else if (category) {
@@ -21,7 +22,10 @@ export async function GET(request: NextRequest) {
       products = getAllProducts()
     }
 
-    return NextResponse.json({ products })
+    const total = products.length
+    const paginated = products.slice((page - 1) * pageSize, page * pageSize)
+
+    return NextResponse.json({ products: paginated, total })
   } catch (error) {
     console.error("[v0] Error fetching products:", error)
     return NextResponse.json({ error: "Failed to fetch products" }, { status: 500 })

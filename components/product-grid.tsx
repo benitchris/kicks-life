@@ -31,9 +31,11 @@ export function ProductGrid({ products }: ProductGridProps) {
   const sortedProducts = [...products].sort((a, b) => Number(b.id) - Number(a.id))
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 sm:gap-4 overflow-x-auto sm:overflow-x-visible px-1">
       {sortedProducts.map((product) => (
-        <ProductCard key={product.id} product={product} />
+        <div className="min-w-[90vw] max-w-[95vw] sm:min-w-0 sm:max-w-full" key={product.id}>
+          <ProductCard product={product} />
+        </div>
       ))}
     </div>
   )

@@ -70,75 +70,77 @@ export function ProductModal({ product, open, onOpenChange }: ProductModalProps)
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl">
-        <DialogHeader>
-          <DialogTitle>{product.name}</DialogTitle>
-        </DialogHeader>
+      <DialogContent className="max-w-4xl p-0">
+        <div className="max-h-[90vh] overflow-y-auto p-6">
+          <DialogHeader>
+            <DialogTitle>{product.name}</DialogTitle>
+          </DialogHeader>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="aspect-square">
-            <img
-              src={product.image_url || "/placeholder.svg?height=400&width=400"}
-              alt={product.name}
-              className="w-full h-full object-cover rounded-lg"
-            />
-          </div>
-
-          <div className="space-y-6">
-            <div>
-              <div className="flex items-center gap-2 mb-2">
-                <Badge variant="secondary">{product.brand}</Badge>
-                <Badge variant="outline">{product.category}</Badge>
-              </div>
-              <p className="text-3xl font-bold text-orange-600 mb-2">${product.price.toFixed(2)}</p>
-              <p className="text-muted-foreground">{product.description}</p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="aspect-square">
+              <img
+                src={product.image_url || "/placeholder.svg?height=400&width=400"}
+                alt={product.name}
+                className="w-full h-full object-cover rounded-lg"
+              />
             </div>
 
-            <div>
-              <Label className="text-base font-semibold">Size</Label>
-              <Select value={selectedSize} onValueChange={setSelectedSize}>
-                <SelectTrigger className="mt-2">
-                  <SelectValue placeholder="Select size" />
-                </SelectTrigger>
-                <SelectContent>
-                  {sizesArray.map((size: string) => (
-                    <SelectItem key={size} value={size}>
-                      US {size}
-                    </SelectItem>
+            <div className="space-y-6">
+              <div>
+                <div className="flex items-center gap-2 mb-2">
+                  <Badge variant="secondary">{product.brand}</Badge>
+                  <Badge variant="outline">{product.category}</Badge>
+                </div>
+                <p className="text-3xl font-bold text-orange-600 mb-2">${product.price.toFixed(2)}</p>
+                <p className="text-muted-foreground">{product.description}</p>
+              </div>
+
+              <div>
+                <Label className="text-base font-semibold">Size</Label>
+                <Select value={selectedSize} onValueChange={setSelectedSize}>
+                  <SelectTrigger className="mt-2">
+                    <SelectValue placeholder="Select size" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {sizesArray.map((size: string) => (
+                      <SelectItem key={size} value={size}>
+                        US {size}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <Label className="text-base font-semibold">Color</Label>
+                <RadioGroup value={selectedColor} onValueChange={setSelectedColor} className="mt-2">
+                  {colorsArray.map((color: string) => (
+                    <div key={color} className="flex items-center space-x-2">
+                      <RadioGroupItem value={color} id={color} />
+                      <Label htmlFor={color}>{color}</Label>
+                    </div>
                   ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div>
-              <Label className="text-base font-semibold">Color</Label>
-              <RadioGroup value={selectedColor} onValueChange={setSelectedColor} className="mt-2">
-                {colorsArray.map((color: string) => (
-                  <div key={color} className="flex items-center space-x-2">
-                    <RadioGroupItem value={color} id={color} />
-                    <Label htmlFor={color}>{color}</Label>
-                  </div>
-                ))}
-              </RadioGroup>
-            </div>
-
-            <div>
-              <Label className="text-base font-semibold">Quantity</Label>
-              <div className="flex items-center gap-2 mt-2">
-                <Button variant="outline" size="icon" onClick={() => setQuantity(Math.max(1, quantity - 1))}>
-                  <span>−</span>
-                </Button>
-                <span className="w-12 text-center font-semibold">{quantity}</span>
-                <Button variant="outline" size="icon" onClick={() => setQuantity(quantity + 1)}>
-                  <span>+</span>
-                </Button>
+                </RadioGroup>
               </div>
-            </div>
 
-            <Button className="w-full bg-orange-600 hover:bg-orange-700" size="lg" onClick={handleAddToCart}>
-              <span className="mr-2">🛒</span>
-              Add to Cart - ${(product.price * quantity).toFixed(2)}
-            </Button>
+              <div>
+                <Label className="text-base font-semibold">Quantity</Label>
+                <div className="flex items-center gap-2 mt-2">
+                  <Button variant="outline" size="icon" onClick={() => setQuantity(Math.max(1, quantity - 1))}>
+                    <span>−</span>
+                  </Button>
+                  <span className="w-12 text-center font-semibold">{quantity}</span>
+                  <Button variant="outline" size="icon" onClick={() => setQuantity(quantity + 1)}>
+                    <span>+</span>
+                  </Button>
+                </div>
+              </div>
+
+              <Button className="w-full bg-orange-600 hover:bg-orange-700" size="lg" onClick={handleAddToCart}>
+                <span className="mr-2">🛒</span>
+                Add to Cart - ${(product.price * quantity).toFixed(2)}
+              </Button>
+            </div>
           </div>
         </div>
       </DialogContent>

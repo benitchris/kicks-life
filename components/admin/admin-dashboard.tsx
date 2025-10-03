@@ -49,9 +49,13 @@ function AdminDashboardContent({ categories }: { categories: any[] }) {
       <div className="border-b">
         <div className="container mx-auto px-2 py-4">
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <h1 className="text-2xl sm:text-3xl font-bold text-orange-600">Kicks Life 250</h1>
-              <p className="text-muted-foreground text-sm sm:text-base">Admin Dashboard</p>
+            <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+              <a href="/" className="text-2xl sm:text-3xl font-bold text-orange-600 hover:underline focus:outline-none focus:ring-2 focus:ring-orange-400 transition">
+                Kicks Life 250
+              </a>
+              <Button asChild variant="outline" className="w-full sm:w-auto">
+                <a href="/">Go to Client</a>
+              </Button>
             </div>
             <Button onClick={() => setIsAddProductOpen(true)} className="bg-orange-600 hover:bg-orange-700 w-full sm:w-auto">
               <Plus className="h-4 w-4 mr-2" />

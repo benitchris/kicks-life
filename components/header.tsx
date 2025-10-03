@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge"
 import { useCart } from "@/hooks/use-cart"
 import { CartSheet } from "@/components/cart-sheet"
 import { useState } from "react"
+import { Sheet, SheetContent } from "@/components/ui/sheet"
 import { useRouter, useSearchParams } from "next/navigation"
 
 
@@ -85,36 +86,28 @@ export function Header() {
         </div>
       </div>
 
-      {/* Mobile menu drawer */}
-      {isMenuOpen && (
-        <div className="fixed inset-0 z-50 bg-white flex">
-          <div className="w-64 h-full shadow-lg p-6 flex flex-col gap-4 animate-slide-in-left">
-            <button
-              className="self-end text-2xl mb-4"
-              aria-label="Close menu"
-              onClick={() => setIsMenuOpen(false)}
-            >
-              ×
-            </button>
-            <a href="/" className="text-lg font-medium hover:text-orange-600 transition-colors" onClick={() => setIsMenuOpen(false)}>
-              Home
-            </a>
-            <a href="#" className="text-lg font-medium hover:text-orange-600 transition-colors" onClick={() => setIsMenuOpen(false)}>
-              New Arrivals
-            </a>
-            <a href="#" className="text-lg font-medium hover:text-orange-600 transition-colors" onClick={() => setIsMenuOpen(false)}>
-              Brands
-            </a>
-            <a href="#" className="text-lg font-medium hover:text-orange-600 transition-colors" onClick={() => setIsMenuOpen(false)}>
-              Sale
-            </a>
-            <a href="/admin" className="text-lg font-medium hover:text-orange-600 transition-colors" onClick={() => setIsMenuOpen(false)}>
-              Admin
-            </a>
-          </div>
-          <div className="flex-1 bg-white/80" onClick={() => setIsMenuOpen(false)} />
-        </div>
-      )}
+      {/* Mobile menu drawer using Sheet */}
+      <Sheet open={isMenuOpen} onOpenChange={setIsMenuOpen}>
+  <SheetContent side="left" className="bg-gray-800/90 text-white p-6 w-64">
+          {/* The SheetContent already provides a close button in the top right, so we remove this one */}
+          <span className="text-2xl font-bold text-orange-600 mb-4 block">Kicks Life 250</span>
+          <a href="/" className="text-lg font-medium hover:text-orange-600 transition-colors block mb-2" onClick={() => setIsMenuOpen(false)}>
+            Home
+          </a>
+          <a href="#" className="text-lg font-medium hover:text-orange-600 transition-colors block mb-2" onClick={() => setIsMenuOpen(false)}>
+            New Arrivals
+          </a>
+          <a href="#" className="text-lg font-medium hover:text-orange-600 transition-colors block mb-2" onClick={() => setIsMenuOpen(false)}>
+            Brands
+          </a>
+          <a href="#" className="text-lg font-medium hover:text-orange-600 transition-colors block mb-2" onClick={() => setIsMenuOpen(false)}>
+            Sale
+          </a>
+          <a href="/admin" className="text-lg font-medium hover:text-orange-600 transition-colors block" onClick={() => setIsMenuOpen(false)}>
+            Admin
+          </a>
+        </SheetContent>
+      </Sheet>
 
       <CartSheet open={isCartOpen} onOpenChange={setIsCartOpen} />
     </header>
